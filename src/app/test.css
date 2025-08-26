@@ -1,0 +1,26 @@
+.scaleBarContainer{
+  display : flex;
+  position : absolute;
+  bottom : 80px;
+  right : 50px;
+  padding : 5px;
+  background-color : rgba(0, 0, 0, 0.5);
+  color : white;
+  font-size : 12px;
+  z-index : 1;
+}
+
+#scaleText {
+  margin : 0px 5px;
+}
+
+.scaleBar {
+  height : 6px;
+  border-top : none rgb(255, 255, 255);
+  border-right : 2px solid rgb(255, 255, 255);
+  border-bottom : 2px solid rgb(255, 255, 255);
+  border-left : 2px solid rgb(255, 255, 255);
+  transition: width 0.3s ease-in-out;
+  border-image : initial;
+  width : 50px;
+}

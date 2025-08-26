@@ -1,0 +1,63 @@
+<div id="cesiumContainer"></div>
+
+<span class="navbar"></span>
+
+<div class="info-panel">
+  <div class="coordinate-display-width">
+    <span class="label">경도(lon):&nbsp;</span>
+    <span class="value">{{ lonDMS }}</span>
+    <span class="label">&nbsp;&nbsp;위도(lat):&nbsp;</span>
+    <span class="value">{{ latDMS }}</span>
+  </div>
+  <div class="coordinate-display">
+    <span class="label">고도(km):&nbsp;</span>
+    <span class="value">{{ altitudeKm }}</span>
+  </div>
+  <div class="coordinate-display">
+    <span class="label">날짜(date):&nbsp;</span>
+    <span class="value">{{ currentDateTime }}</span>
+  </div>
+</div>
+
+<div class="coordinate-display scale-bar-container">
+  <span class="label">축척도:&nbsp;</span>
+  <span class="value">{{ scaleText }}</span>
+  <div id="scaleBar" class="scale-bar" [style.width]="scaleBarWidth"></div>
+</div>
+
+<div class="toolbar-container">
+  <div class="tool-group">
+    <button class="tool-button layer" title="레이어"></button>
+    <button class="tool-button opacity" title="지도 투명도 조절"></button>
+    <button class="tool-button pin" title="지도 고정" (click)="toggleMapLock()"></button>
+  </div>
+
+  <div class="tool-group">
+    <button class="tool-button distance" title="거리 측정" (click)="startDistanceMeasurement()"></button>
+    <button class="tool-button area" title="면적 측정" (click)="startAreaMeasurement()"></button>
+    <button class="tool-button radius" title="반경 측정"></button>
+    <button class="tool-button cross" title="단면도 측정"></button>
+    <button class="tool-button volume" title="부피 측정"></button>
+    <button class="tool-button reset" title="측정 초기화" (click)="clearMeasurement()"></button>
+  </div>
+
+  <div class="tool-group">
+    <button class="tool-button home" title="위치 복귀"></button>
+    <button class="tool-button zoom-in" title="지도 확대"></button>
+    <button class="tool-button zoom-out" title="지도 축소"></button>
+  </div>
+
+  <div class="tool-group">
+    <button class="tool-button compass-button" title="나침반">
+    </button>
+  </div>
+</div>
+
+<div class="logo-box">
+  <div class="logo logo01">
+    <img src="assets/logo01.png" alt="환경부 로고" />
+  </div>
+  <div class="logo logo02">
+    <img src="assets/logo02.png" alt="수자원공사 로고" />
+  </div>
+</div>
