@@ -27,37 +27,70 @@
 
 <div class="toolbar-container">
   <div class="tool-group">
-    <button class="tool-button layer" title="레이어"></button>
-    <button class="tool-button opacity" title="지도 투명도 조절"></button>
-    <button class="tool-button pin" title="지도 고정" (click)="toggleMapLock()"></button>
+    <button class="tool-button layer"
+            title="레이어"
+            [class.active]="buttonStates['layer']"
+            (click)="toggleButton('layer')"></button>
+
+    <button class="tool-button opacity"
+            title="지도 투명도 조절"
+            [class.active]="buttonStates['opacity']"
+            (click)="toggleButton('opacity')"></button>
+
+    <button class="tool-button pin"
+            title="지도 고정"
+            [class.active]="buttonStates['pin']"
+            (click)="toggleMapLock(); toggleButton('pin')"></button>
   </div>
 
   <div class="tool-group">
-    <button class="tool-button distance" title="거리 측정" (click)="startDistanceMeasurement()"></button>
-    <button class="tool-button area" title="면적 측정" (click)="startAreaMeasurement()"></button>
-    <button class="tool-button radius" title="반경 측정"></button>
-    <button class="tool-button cross" title="단면도 측정"></button>
-    <button class="tool-button volume" title="부피 측정"></button>
-    <button class="tool-button reset" title="측정 초기화" (click)="clearMeasurement()"></button>
+    <button class="tool-button distance"
+            title="거리 측정"
+            [class.active]="buttonStates['distance']"
+            (click)="onToggleMeasurement('distance')"></button>
+
+    <button class="tool-button area"
+            title="면적 측정"
+            [class.active]="buttonStates['area']"
+            (click)="onToggleMeasurement('area')"></button>
+
+    <button class="tool-button radius"
+            title="반경 측정"
+            [class.active]="buttonStates['radius']"
+            (click)="onToggleMeasurement('radius')"></button>
+
+    <button class="tool-button cross"
+            title="단면도 측정"
+            [class.active]="buttonStates['cross']"
+            (click)="onToggleMeasurement('cross')"></button>
+
+    <button class="tool-button volume"
+            title="부피 측정"
+            [class.active]="buttonStates['volume']"
+            (click)="onToggleMeasurement('volume')"></button>
+
+    <button class="tool-button reset"
+            title="측정 초기화"
+            (click)="onResetMeasurements()"></button>
   </div>
 
   <div class="tool-group">
-    <button class="tool-button home" title="위치 복귀"></button>
-    <button class="tool-button zoom-in" title="지도 확대"></button>
-    <button class="tool-button zoom-out" title="지도 축소"></button>
+    <button class="tool-button home" title="위치 복귀" (click)="goHome()"></button>
+    <button class="tool-button zoom-in" title="지도 확대" (click)="zoomIn()"></button>
+    <button class="tool-button zoom-out" title="지도 축소" (click)="zoomOut()"></button>
   </div>
 
+
   <div class="tool-group">
-    <button class="tool-button compass-button" title="나침반">
-    </button>
+    <div class="compass" id="CesiumNavigation"></div>
   </div>
 </div>
 
 <div class="logo-box">
   <div class="logo logo01">
-    <img src="assets/logo01.png" alt="환경부 로고" />
+    <img src="assets/logo01.png" alt="환경부 로고"/>
   </div>
   <div class="logo logo02">
-    <img src="assets/logo02.png" alt="수자원공사 로고" />
+    <img src="assets/logo02.png" alt="수자원공사 로고"/>
   </div>
 </div>

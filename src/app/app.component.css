@@ -14,9 +14,10 @@
 .scale-bar { height : 6px; border-top : none rgb(255, 255, 255); border-right : 2px solid rgb(255, 255, 255); border-bottom : 2px solid rgb(255, 255, 255); border-left : 2px solid rgb(255, 255, 255); transition: width 0.3s ease-in-out; border-image : initial; width : 50px; }
 .toolbar-container { position: absolute; top: 80px; right: 23px; z-index: 9999; display: flex; flex-direction: column; gap: 16px; }
 .tool-group { display: flex; flex-direction: column; gap: 6px; background: rgba(33, 36, 41, 0.8); padding: 5px; border-radius: 12px; }
-.tool-button { width: 26px; height: 26px; background-color: white; border: none; border-radius: 50%; cursor: pointer; background-size: 60% 60%; background-position: center; background-repeat: no-repeat; transition: background-color 0.1s ease; }
+.tool-button { width: 26px; height: 26px; background-color: white; border: none; border-radius: 50%; cursor: pointer; background-size: 60% 60%; background-position: center; background-repeat: no-repeat; transition: background-color 0.3s ease; }
 .tool-button:hover { background-color: #87cefa; }
-.compass-button img { width: 32px; height: 32px; object-fit: contain; }
+.tool-button.active { background-color: #87cefa; }
+.compass { width: 26px; height: 26px; background-color: white; border: none; border-radius: 50%; background-size: 60% 60%; background-position: center; background-repeat: no-repeat; }
 .logo-box { position: absolute; right: 26px; bottom: 10px; display: flex; gap: 20px; width: 360px; height: auto; opacity: 0.9; filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.8)); z-index: 10; .logo { display: flex; img { width: 100%; }}}
 .toolbar { position: absolute; top: 10px; left: 10px; background: rgba(255, 255, 255, 0.9); padding: 8px 12px; border-radius: 4px; font-family: sans-serif; z-index: 10; display: flex; gap: 10px; align-items: center; }
-.compass { position: absolute; top: 10px; right: 10px; width: 50px; height: 50px; font-size: 40px; transition: transform 0.1s linear; }
+

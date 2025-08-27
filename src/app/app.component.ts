@@ -29,12 +29,10 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   lonDMS = '0º';
   altitudeKm = 0;
   currentDateTime = '';
-  compassRotation = 0;
-
   scaleText: string = 'N/A';
   scaleBarWidth: string = '0px';
 
-  // 전체 거리 텍스트 (필요하면 그룹별로 따로 관리 가능)
+  // 전체 거리 텍스트
   totalDistanceText = '0 m';
 
   private handler!: ScreenSpaceEventHandler;
@@ -48,7 +46,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   private intervalId: any;
   private scaleUpdateTimer: any;
 
-  predefinedDistances = [10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000];
+  predefinedDistances = [10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000];
   minScaleBarWidth = 60;
   maxScaleBarWidth = 100;
 
@@ -74,8 +72,9 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         vrButton: false,
       });
 
-      this.viewer.camera.setView({
-        destination: Cartesian3.fromDegrees(127.38019058822, 36.359558821549, 3000)
+      this.viewer.camera.flyTo({
+        destination: Cartesian3.fromDegrees(127.38019058822, 36.359558821549, 3000),
+        duration: 3,
       });
 
       this.handler = new ScreenSpaceEventHandler(this.viewer.scene.canvas);
@@ -187,8 +186,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         localPolylines.push(polyline);
       }
 
-      // 총 거리 계산 및 표시 (totalDistanceText는 컴포넌트 전역이지만,
-      // 여러 그룹 동시 측정시 UI에 별도 표시 필요 시 그룹별 관리 고려)
+      // 총 거리 계산 및 표시
       const total = this.computeTotalDistance(localPositions);
       this.totalDistanceText = this.formatDistance(total);
 
@@ -361,12 +359,6 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  clearMeasurement(): void {
-    this.viewer.entities.removeAll();
-    this.measureHandler?.destroy();
-    this.measureHandler = null;
-  }
-
   ngOnDestroy(): void {
     if (this.intervalId) {
       clearInterval(this.intervalId);
@@ -526,21 +518,115 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     c.enableLook = !this.isMapLocked;
   }
 
-  // 미완
-  updateCompass(): void {
-    const camera = this.viewer.camera;
-    const direction = camera.direction;
-    const north = Cartesian3.UNIT_Y;
+  // 클래스 멤버에 추가
+  buttonStates: { [key: string]: boolean } = {
+    layer: false,
+    opacity: false,
+    pin: false,
+    distance: false,
+    area: false,
+    radius: false,
+    cross: false,
+    volume: false
+  };
 
-    // 방향 벡터를 평면으로 투영
-    const flatDir = new Cartesian3(direction.x, direction.y, 0);
-    Cartesian3.normalize(flatDir, flatDir);
-
-    // 북쪽과 각도 계산
-    const angleRad = Math.acos(Cartesian3.dot(flatDir, north));
-    const angleDeg = CesiumMath.toDegrees(angleRad);
-
-    this.compassRotation = angleDeg;
+  // 토글 전용
+  toggleButton(key: string) {
+    this.buttonStates[key] = !this.buttonStates[key];
   }
+
+  // 측정 버튼 토글 처리
+  onToggleMeasurement(key: string) {
+    this.buttonStates[key] = !this.buttonStates[key];
+
+    if (this.buttonStates[key]) {
+      if (key === 'distance') {
+        this.startDistanceMeasurement();
+      } else if (key === 'area') {
+        this.startAreaMeasurement();
+      }
+    } else {
+      // OFF: 측정 정지
+      this.stopAllMeasurements();
+    }
+  }
+
+  // 측정 정지
+  stopAllMeasurements() {
+    // 핸들러 제거
+    if (this.measureHandler) {
+      this.measureHandler.destroy();
+      this.measureHandler = null;
+    }
+
+    const allEntities = this.viewer.entities.values.slice();
+    allEntities.forEach(ent => {
+      if (ent.id?.startsWith('measureGroup-')) {
+        this.viewer.entities.remove(ent);
+      }
+    });
+  }
+
+  // 리셋 버튼
+  onResetMeasurements() {
+    // 측정 관련 키 false
+    const measureKeys = ['distance', 'area', 'radius', 'cross', 'volume'];
+    measureKeys.forEach(k => this.buttonStates[k] = false);
+
+    this.stopAllMeasurements();
+  }
+
+  goHome() {
+    // 카메라를 초기 위치로 이동
+    this.viewer.camera.flyTo({
+      destination: Cartesian3.fromDegrees(127.38019058822, 36.359558821549, 3000),
+      duration: 2,
+    });
+  }
+
+  zoomIn() {
+    const camera = this.viewer.camera;
+
+    // 현재 카메라 위치
+    const carto = camera.positionCartographic;
+    const currentHeight = carto.height;
+
+    // 줌인: 높이 줄이기
+    const newHeight = Math.max(currentHeight * 0.5, 100);
+
+    // Cartesian3 변환
+    const destination = Cesium.Cartesian3.fromRadians(
+      carto.longitude,
+      carto.latitude,
+      newHeight
+    );
+
+    camera.flyTo({
+      destination,
+      duration: 0.5
+    });
+  }
+
+  zoomOut() {
+    const camera = this.viewer.camera;
+
+    const carto = camera.positionCartographic;
+    const currentHeight = carto.height;
+
+    // 줌아웃: 높이 늘리기 (최대 5,000,000m)
+    const newHeight = Math.min(currentHeight * 2, 5000000);
+
+    const destination = Cesium.Cartesian3.fromRadians(
+      carto.longitude,
+      carto.latitude,
+      newHeight
+    );
+
+    camera.flyTo({
+      destination,
+      duration: 0.5
+    });
+  }
+
 
 }
