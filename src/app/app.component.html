@@ -1,20 +1,37 @@
 <div id="cesiumContainer"></div>
 
-<span class="navbar"></span>
+<div class="navbar">
+  <div class="navbar-logo">
+    <img src="assets/logo01.png" alt="환경부 로고" class="logo">
+    <img src="assets/logo02.png" alt="수자원공사 로고" class="logo">
+  </div>
+
+  <div class="navbar-contents">
+    <button class="nav-btn">활용산출물</button>
+    <button class="nav-btn">자료 수집요청</button>
+    <button class="nav-btn">메타데이터 관리</button>
+    <button class="nav-btn">내 정보</button>
+    <button class="nav-btn">설정</button>
+  </div>
+
+  <div class="navbar-login">
+    <button class="nav-btn">로그인</button>
+  </div>
+</div>
 
 <div class="info-panel">
   <div class="coordinate-display-width">
-    <span class="label">경도(lon):&nbsp;</span>
+    <span class="label">경도 (LON):&nbsp;</span>
     <span class="value">{{ lonDMS }}</span>
-    <span class="label">&nbsp;&nbsp;위도(lat):&nbsp;</span>
+    <span class="label">&nbsp;&nbsp;위도 (LAT):&nbsp;</span>
     <span class="value">{{ latDMS }}</span>
   </div>
   <div class="coordinate-display">
-    <span class="label">고도(km):&nbsp;</span>
-    <span class="value">{{ altitudeKm }}</span>
+    <span class="label">고도 (ALT):&nbsp;</span>
+    <span class="value">{{ altitudeKm }} Km</span>
   </div>
   <div class="coordinate-display">
-    <span class="label">날짜(date):&nbsp;</span>
+    <span class="label">날짜 (DATE):&nbsp;</span>
     <span class="value">{{ currentDateTime }}</span>
   </div>
 </div>
@@ -27,51 +44,18 @@
 
 <div class="toolbar-container">
   <div class="tool-group">
-    <button class="tool-button layer"
-            title="레이어"
-            [class.active]="buttonStates['layer']"
-            (click)="toggleButton('layer')"></button>
-
-    <button class="tool-button opacity"
-            title="지도 투명도 조절"
-            [class.active]="buttonStates['opacity']"
-            (click)="toggleButton('opacity')"></button>
-
-    <button class="tool-button pin"
-            title="지도 고정"
-            [class.active]="buttonStates['pin']"
-            (click)="toggleMapLock(); toggleButton('pin')"></button>
+    <button class="tool-button layer" title="레이어" [class.active]="buttonStates['layer']" (click)="toggleButton('layer')"></button>
+    <button class="tool-button opacity" title="지도 투명도 조절" [class.active]="buttonStates['opacity']" (click)="toggleButton('opacity')"></button>
+    <button class="tool-button pin" title="지도 고정" [class.active]="buttonStates['pin']" (click)="toggleMapLock(); toggleButton('pin')"></button>
   </div>
 
   <div class="tool-group">
-    <button class="tool-button distance"
-            title="거리 측정"
-            [class.active]="buttonStates['distance']"
-            (click)="onToggleMeasurement('distance')"></button>
-
-    <button class="tool-button area"
-            title="면적 측정"
-            [class.active]="buttonStates['area']"
-            (click)="onToggleMeasurement('area')"></button>
-
-    <button class="tool-button radius"
-            title="반경 측정"
-            [class.active]="buttonStates['radius']"
-            (click)="onToggleMeasurement('radius')"></button>
-
-    <button class="tool-button cross"
-            title="단면도 측정"
-            [class.active]="buttonStates['cross']"
-            (click)="onToggleMeasurement('cross')"></button>
-
-    <button class="tool-button volume"
-            title="부피 측정"
-            [class.active]="buttonStates['volume']"
-            (click)="onToggleMeasurement('volume')"></button>
-
-    <button class="tool-button reset"
-            title="측정 초기화"
-            (click)="onResetMeasurements()"></button>
+    <button class="tool-button distance" title="거리 측정" [class.active]="buttonStates['distance']" (click)="onToggleMeasurement('distance')"></button>
+    <button class="tool-button area" title="면적 측정" [class.active]="buttonStates['area']" (click)="onToggleMeasurement('area')"></button>
+    <button class="tool-button radius" title="반경 측정" [class.active]="buttonStates['radius']" (click)="onToggleMeasurement('radius')"></button>
+    <button class="tool-button cross" title="단면도 측정" [class.active]="buttonStates['cross']" (click)="onToggleMeasurement('cross')"></button>
+    <button class="tool-button volume" title="부피 측정" [class.active]="buttonStates['volume']" (click)="onToggleMeasurement('volume')"></button>
+    <button class="tool-button reset" title="측정 초기화" (click)="onResetMeasurements()"></button>
   </div>
 
   <div class="tool-group">
@@ -79,18 +63,90 @@
     <button class="tool-button zoom-in" title="지도 확대" (click)="zoomIn()"></button>
     <button class="tool-button zoom-out" title="지도 축소" (click)="zoomOut()"></button>
   </div>
+</div>
 
+<!-- Cesium 지도 -->
+<div id="cesiumContainer"></div>
 
+<!-- 툴바 -->
+<div class="toolbar-container">
   <div class="tool-group">
-    <div class="compass" id="CesiumNavigation"></div>
+    <button class="tool-button layer" title="레이어"
+            [class.active]="buttonStates['layer']"
+            (click)="toggleLayerPanel()">
+    </button>
+
+    <button class="tool-button opacity" title="지도 투명도 조절"
+            [class.active]="buttonStates['opacity']"
+            (click)="toggleButton('opacity')">
+    </button>
+
+    <button class="tool-button pin" title="지도 고정"
+            [class.active]="buttonStates['pin']"
+            (click)="toggleMapLock(); toggleButton('pin')">
+    </button>
   </div>
 </div>
 
-<div class="logo-box">
-  <div class="logo logo01">
-    <img src="assets/logo01.png" alt="환경부 로고"/>
+<!-- 레이어 패널 -->
+<div class="layer-panel" [class.open]="isLayerPanelOpen">
+  <h2>배경지도</h2>
+  <div class="basemap-selector">
+    <label class="basemap-btn normal-satellite">
+      <input type="radio" name="basemap" value="normal" (change)="setBasemap('normal')">일반
+    </label>
+
+    <label class="basemap-btn normal-satellite">
+      <input type="radio" name="basemap" value="satellite" (change)="setBasemap('satellite')">위성
+    </label>
+
+    <label class="basemap-btn vworld">
+      <input type="radio" name="basemap" value="vworld" checked (change)="setBasemap('vworld')">VWORLD
+    </label>
+
+    <label class="basemap-btn esri">
+      <input type="radio" name="basemap" value="esri" checked (change)="setBasemap('esri')">Esri
+    </label>
   </div>
-  <div class="logo logo02">
-    <img src="assets/logo02.png" alt="수자원공사 로고"/>
+
+  <h2>레이어</h2>
+  <div class="accordion">
+    <div class="accordion-item">
+      <div class="accordion-header" (click)="toggleAccordion('watershed')">
+        유역도 <span [class.rotate]="accordionOpen['watershed']">▼</span>
+      </div>
+      <div class="accordion-body" *ngIf="accordionOpen['watershed']">
+        <label><input type="checkbox" (change)="toggleLayer('watershed_big', $event)"> 대권역</label>
+        <label><input type="checkbox" (change)="toggleLayer('watershed_mid', $event)"> 중권역</label>
+        <label><input type="checkbox" (change)="toggleLayer('watershed_std', $event)"> 표준유역</label>
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <div class="accordion-header" (click)="toggleAccordion('admin')">
+        행정구역 <span [class.rotate]="accordionOpen['admin']">▼</span></div>
+      <div class="accordion-body" *ngIf="accordionOpen['admin']">
+        <label><input type="checkbox" (change)="toggleLayer('sido', $event)"> 시도</label>
+        <label><input type="checkbox" (change)="toggleLayer('sigungu', $event)"> 시군구</label>
+        <label><input type="checkbox" (change)="toggleLayer('eupmyeon', $event)"> 읍면동</label>
+        <label><input type="checkbox" (change)="toggleLayer('dongri', $event)"> 동리</label>
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <div class="accordion-header" (click)="toggleAccordion('river')">
+        하천망도 <span [class.rotate]="accordionOpen['river']">▼</span></div>
+      <div class="accordion-body" *ngIf="accordionOpen['river']">
+        <label><input type="checkbox" (change)="toggleLayer('river_national', $event)"> 국가하천</label>
+        <label><input type="checkbox" (change)="toggleLayer('river_local', $event)"> 지방하천</label>
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <div class="accordion-header">
+        <label><input type="checkbox" (change)="toggleLayer('landcover', $event)"> 토지피복도</label>
+      </div>
+    </div>
   </div>
 </div>
+

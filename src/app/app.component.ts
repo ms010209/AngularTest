@@ -14,11 +14,13 @@ import {
 } from 'cesium';
 import { environment } from '../environments/environment';
 import * as Cesium from 'cesium';
+import {CommonModule} from '@angular/common';
 
 (window as any).CESIUM_BASE_URL = environment.CESIUM_BASE_URL;
 
 @Component({
   selector: 'app-root',
+  imports: [CommonModule],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
@@ -49,6 +51,28 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   predefinedDistances = [10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000];
   minScaleBarWidth = 60;
   maxScaleBarWidth = 100;
+
+  isMapLocked = false;
+
+  // 버튼 상태
+  buttonStates: { [key: string]: boolean } = {
+    layer: false,
+    opacity: false,
+    pin: false,
+    distance: false,
+    area: false,
+    radius: false,
+    cross: false,
+    volume: false
+  };
+
+  // 레이어 패널 상태
+  isLayerPanelOpen = false;
+  accordionOpen: { [key: string]: boolean } = {
+    watershed: false,
+    admin: false,
+    river: false
+  };
 
   constructor(private readonly ngZone: NgZone) {}
 
@@ -108,6 +132,13 @@ export class AppComponent implements AfterViewInit, OnDestroy {
       this.intervalId = setInterval(() => this.updateDateTime(), 100); // 고도 갱신
     });
   }
+  ngOnDestroy(): void {
+    if (this.intervalId) clearInterval(this.intervalId);
+    if (this.scaleUpdateTimer) clearTimeout(this.scaleUpdateTimer);
+    if (this.handler) this.handler.destroy();
+    if (this.measureHandler) this.measureHandler.destroy();
+    if (this.viewer) this.viewer.destroy();
+  }
 
   // 거리 측정 시작: 새 그룹으로 새로 시작
   startDistanceMeasurement(): void {
@@ -157,13 +188,14 @@ export class AppComponent implements AfterViewInit, OnDestroy {
       // 마커 간 거리 라벨 생성
       for (let i = localDistanceLabels.length; i < localPositions.length - 1; i++) {
         const dist = Cartesian3.distance(localPositions[i], localPositions[i + 1]);
+        const distText = this.formatDistance(dist);
         const midPoint = Cartesian3.midpoint(localPositions[i], localPositions[i + 1], new Cartesian3());
 
         const labelEntity = this.viewer.entities.add({
           id: `${groupId}-dist-label-${i + 1}`,
           position: midPoint,
           label: {
-            text: (dist / 1000).toFixed(2) + ' km',
+            text: distText,
             font: '16px sans-serif',
             fillColor: Color.WHITE,
             style: Cesium.LabelStyle.FILL_AND_OUTLINE,
@@ -330,7 +362,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     );
     const distance = geodesic.surfaceDistance;
 
-    const { closestDistance, barWidth } = this.calculateClosestScale(distance);
+    const {closestDistance, barWidth} = this.calculateClosestScale(distance);
     this.scaleText = this.formatDistance(closestDistance);
     this.scaleBarWidth = `${barWidth}px`;
   }
@@ -343,37 +375,19 @@ export class AppComponent implements AfterViewInit, OnDestroy {
       const scaleWidth = this.maxScaleBarWidth / ratio;
 
       if (scaleWidth >= this.minScaleBarWidth && scaleWidth <= this.maxScaleBarWidth) {
-        return { closestDistance: scale, barWidth: Math.round(scaleWidth) };
+        return {closestDistance: scale, barWidth: Math.round(scaleWidth)};
       } else if (scaleWidth > this.maxScaleBarWidth && distance <= nextScale) {
-        return { closestDistance: nextScale, barWidth: this.minScaleBarWidth };
+        return {closestDistance: nextScale, barWidth: this.minScaleBarWidth};
       }
     }
-    return { closestDistance: this.predefinedDistances[0], barWidth: this.minScaleBarWidth };
+    return {closestDistance: this.predefinedDistances[0], barWidth: this.minScaleBarWidth};
   }
 
   formatDistance(distance: number): string {
     if (distance < 1000) {
-      return `${distance}m`;
+      return `${distance.toFixed(2)}m`;
     } else {
-      return `${(distance / 1000).toFixed(0)}km`;
-    }
-  }
-
-  ngOnDestroy(): void {
-    if (this.intervalId) {
-      clearInterval(this.intervalId);
-    }
-    if (this.scaleUpdateTimer) {
-      clearTimeout(this.scaleUpdateTimer);
-    }
-    if (this.handler) {
-      this.handler.destroy();
-    }
-    if (this.measureHandler) {
-      this.measureHandler.destroy();
-    }
-    if (this.viewer) {
-      this.viewer.destroy();
+      return `${(distance / 1000).toFixed(2)}km`;
     }
   }
 
@@ -505,7 +519,6 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     area = (Math.abs(area) * Math.pow(ellipsoid.maximumRadius, 2)) / 2.0;
     return area;
   }
-  isMapLocked = false;
 
   // 레이어 맵 고정
   toggleMapLock(): void {
@@ -518,24 +531,12 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     c.enableLook = !this.isMapLocked;
   }
 
-  // 클래스 멤버에 추가
-  buttonStates: { [key: string]: boolean } = {
-    layer: false,
-    opacity: false,
-    pin: false,
-    distance: false,
-    area: false,
-    radius: false,
-    cross: false,
-    volume: false
-  };
-
   // 토글 전용
   toggleButton(key: string) {
     this.buttonStates[key] = !this.buttonStates[key];
   }
 
-  // 측정 버튼 토글 처리
+  // 측정 버튼 토글 호출 처리
   onToggleMeasurement(key: string) {
     this.buttonStates[key] = !this.buttonStates[key];
 
@@ -544,6 +545,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         this.startDistanceMeasurement();
       } else if (key === 'area') {
         this.startAreaMeasurement();
+      } else if (key === 'radius') {
+        this.startRadiusMeasurement(); // 이어서 추가하면 됨
       }
     } else {
       // OFF: 측정 정지
@@ -559,13 +562,17 @@ export class AppComponent implements AfterViewInit, OnDestroy {
       this.measureHandler = null;
     }
 
+    // 측정 그룹 ID 패턴 목록
+    const measureGroups = ['measureGroup-', 'areaGroup-', 'radiusGroup-']; // 등등 단면도, 부피 추가해야 함
+
     const allEntities = this.viewer.entities.values.slice();
     allEntities.forEach(ent => {
-      if (ent.id?.startsWith('measureGroup-')) {
+      if (ent.id && measureGroups.some(prefix => ent.id!.startsWith(prefix))) {
         this.viewer.entities.remove(ent);
       }
     });
   }
+
 
   // 리셋 버튼
   onResetMeasurements() {
@@ -574,6 +581,27 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     measureKeys.forEach(k => this.buttonStates[k] = false);
 
     this.stopAllMeasurements();
+  }
+
+  // 레이어 패널
+  toggleLayerPanel(): void {
+    this.isLayerPanelOpen = !this.isLayerPanelOpen;
+    this.buttonStates['layer'] = this.isLayerPanelOpen;
+  }
+
+  toggleAccordion(section: string): void {
+    this.accordionOpen[section] = !this.accordionOpen[section];
+  }
+
+  setBasemap(type: string): void {
+    console.log("Basemap switched to:", type);
+    // Cesium 기본 레이어 교체 코드 추가 가능
+  }
+
+  toggleLayer(layerName: string, event: any): void {
+    const checked = event.target.checked;
+    console.log("Layer:", layerName, "Checked:", checked);
+    // 실제 레이어 show/hide 구현
   }
 
   goHome() {
@@ -628,5 +656,125 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     });
   }
 
+  // 반경 구하기
+  startRadiusMeasurement(): void {
+    // 기존 측정 종료
+    if (this.measureHandler) {
+      this.measureHandler.destroy();
+      this.measureHandler = null;
+    }
 
+    const groupId = `radiusGroup-${this.groupIdCounter++}`;
+    let centerPosition: Cartesian3 | null = null;
+
+    this.measureHandler = new ScreenSpaceEventHandler(this.viewer.scene.canvas);
+
+    // 좌클릭: 중심점 지정
+    this.measureHandler.setInputAction((click: { position: Cartesian2 }) => {
+      const position = this.viewer.scene.pickPosition(click.position);
+      if (!position) return;
+
+      if (!centerPosition) {
+        centerPosition = position;
+
+        this.viewer.entities.add({
+          id: `${groupId}-centerMarker`,
+          position: centerPosition,
+          point: {pixelSize: 10, color: Color.BLUE},
+          label: {
+            font: 'bold 16px sans-serif',
+            verticalOrigin: VerticalOrigin.BOTTOM,
+            pixelOffset: new Cartesian2(0, -10),
+            fillColor: Color.WHITE,
+            style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+            outlineWidth: 2,
+          }
+        });
+      } else {
+        // 두 번째 클릭: 반경 계산
+        const edgePosition = position;
+
+        const centerCarto = Cesium.Ellipsoid.WGS84.cartesianToCartographic(centerPosition);
+        const edgeCarto = Cesium.Ellipsoid.WGS84.cartesianToCartographic(edgePosition);
+        const geodesic = new EllipsoidGeodesic(centerCarto, edgeCarto);
+        const radiusMeters = geodesic.surfaceDistance;
+
+        // 원 그리기
+        this.viewer.entities.add({
+          id: `${groupId}-radiusCircle`,
+          position: centerPosition,
+          ellipse: {
+            semiMinorAxis: radiusMeters,
+            semiMajorAxis: radiusMeters,
+            height: centerCarto.height,
+            material: Color.BLUE.withAlpha(0.2),
+            outline: false,
+          }
+        });
+
+        // 반지름 선 그리기
+        this.viewer.entities.add({
+          id: `${groupId}-radiusLine`,
+          polyline: {
+            positions: [centerPosition, edgePosition],
+            width: 3,
+            material: Color.WHITE,
+          }
+        });
+
+        // 반경 라벨
+        this.viewer.entities.add({
+          id: `${groupId}-radiusLabel`,
+          position: edgePosition,
+          label: {
+            text: `반경: ${(radiusMeters / 1000).toFixed(2)} km`,
+            font: 'bold 16px sans-serif',
+            fillColor: Color.WHITE,
+            style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+            outlineWidth: 2,
+            verticalOrigin: VerticalOrigin.BOTTOM,
+            pixelOffset: new Cartesian2(0, -20),
+            heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+          }
+        });
+
+        // 측정 종료
+        if (this.measureHandler) {
+          this.measureHandler.destroy();
+          this.measureHandler = null;
+        }
+      }
+    }, ScreenSpaceEventType.LEFT_CLICK);
+
+    // 마우스 이동: 임시 반경 원 보여주기
+    this.measureHandler.setInputAction((movement: { endPosition: Cartesian2 }) => {
+      if (!centerPosition) return;
+      const tempPosition = this.viewer.scene.pickPosition(movement.endPosition);
+      if (!tempPosition) return;
+
+      const centerCarto = Cesium.Ellipsoid.WGS84.cartesianToCartographic(centerPosition);
+      const tempCarto = Cesium.Ellipsoid.WGS84.cartesianToCartographic(tempPosition);
+      const geodesic = new EllipsoidGeodesic(centerCarto, tempCarto);
+      const radiusMeters = geodesic.surfaceDistance;
+
+      // 기존 임시 원 제거
+      if (this.viewer.entities.getById(`${groupId}-tempRadius`)) {
+        this.viewer.entities.removeById(`${groupId}-tempRadius`);
+      }
+
+      this.viewer.entities.add({
+        id: `${groupId}-tempRadius`,
+        position: centerPosition,
+        ellipse: {
+          semiMinorAxis: radiusMeters,
+          semiMajorAxis: radiusMeters,
+          height: centerCarto.height,
+          material: Color.CYAN.withAlpha(0.2),
+          outline: true,
+          outlineColor: Color.CYAN,
+        }
+      });
+    }, ScreenSpaceEventType.MOUSE_MOVE);
+
+  }
 }

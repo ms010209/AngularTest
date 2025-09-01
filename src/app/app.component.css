@@ -1,23 +1,53 @@
+/* Cesium Container */
 #cesiumContainer { width: 100%; height: 100vh; margin: 0; padding: 0; overflow: hidden; position: relative; }
-.navbar { width: 100%; height: 70px; }
-.info-panel { position: absolute; top: 10px; right: 10px; display: flex; gap: 7px; padding: 8px 12px; border-radius: 8px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 12px; color: #87cefa; z-index: 9999; user-select: none; }
-.coordinate-display-width,
-.coordinate-display { background: rgba(33, 36, 41, 0.8); padding: 5px 9px; border-radius: 6px; display: flex; align-items: center; }
-.coordinate-display-width { width: 271px; }
-.coordinate-display .label,
-.coordinate-display-width .label { font-weight: 600; margin-right: 4px; }
-.coordinate-display .value,
-.coordinate-display-width .value { color: #fff; white-space: nowrap; }
-.scale-bar-container { position: absolute; bottom: 60px; right: 23px; display: flex; align-items: center; background: rgba(33, 36, 41, 0.8); padding: 5px 9px; border-radius: 6px; min-width: 140px; user-select: none; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 12px; color: #87cefa; z-index : 1; }
+
+/* Navbar */
+.navbar { position: absolute; top: 0; left: 0; width: 100%; height: 60px; background-color: rgba(33, 36, 41, 1); display: flex; align-items: center; justify-content: space-between; z-index: 10000; color: #fff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+.navbar-logo { display: flex; gap: 10px; padding-inline: 20px; }
+.navbar-logo .logo { height: 40px; }
+.navbar-contents { display: flex; gap: 50px; padding-inline: 20px; font-weight: bold; }
+.navbar-login { display: flex; padding-inline: 20px; }
+.nav-btn { background: none; border: none; color: #fff; font-size: 14px; cursor: pointer; padding: 10px 14px; border-radius: 6px; transition: background 0.3s; }
+.nav-btn:hover { background-color: #ffffff1a; }
+
+/* Info Panel */
+.info-panel { position: absolute; top: 70px; right: 4px; display: flex; gap: 7px; padding: 8px 12px; border-radius: 8px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 12px; color: #87cefa; z-index: 9999; user-select: none; }
+.coordinate-display-width, .coordinate-display { background: rgba(33, 36, 41, 0.8); padding: 5px 9px; border-radius: 6px; display: flex; align-items: center; }
+.coordinate-display-width { width: 290px; }
+.coordinate-display .label, .coordinate-display-width .label { font-weight: 600; margin-right: 4px; }
+.coordinate-display .value, .coordinate-display-width .value { color: #fff; white-space: nowrap; }
+
+/* Toolbar */
+.toolbar-container { position: absolute; top: 120px; right: 16px; z-index: 9999; display: flex; flex-direction: column; gap: 16px; }
+.tool-group { display: flex; flex-direction: column; gap: 6px; background: rgba(33, 36, 41, 0.8); padding: 5px; border-radius: 12px; }
+.tool-button { width: 26px; height: 26px; background-color: rgba(33, 36, 41, 0.9); border: none; border-radius: 8px; cursor: pointer; background-size: 60% 60%; background-position: center; background-repeat: no-repeat; transition: background-color 0.3s ease; }
+.tool-button:hover { background-color: #ffffff1a; }
+.tool-button.active { background-color: white; }
+
+/* Scale Bar */
+.scale-bar-container { position: absolute; bottom: 19px; right: 16px; display: flex; align-items: center; background: rgba(33, 36, 41, 0.8); padding: 5px 9px; border-radius: 6px; min-width: 140px; user-select: none; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 12px; color: #87cefa; z-index : 1; }
 .scale-bar-container .label { font-weight: 600; margin-right: 8px; white-space: nowrap; }
 .scale-bar-container .value { flex-grow: 1; text-align: right; margin-right: 10px; color: #fff; white-space: nowrap; }
-.scale-bar { height : 6px; border-top : none rgb(255, 255, 255); border-right : 2px solid rgb(255, 255, 255); border-bottom : 2px solid rgb(255, 255, 255); border-left : 2px solid rgb(255, 255, 255); transition: width 0.3s ease-in-out; border-image : initial; width : 50px; }
-.toolbar-container { position: absolute; top: 80px; right: 23px; z-index: 9999; display: flex; flex-direction: column; gap: 16px; }
-.tool-group { display: flex; flex-direction: column; gap: 6px; background: rgba(33, 36, 41, 0.8); padding: 5px; border-radius: 12px; }
-.tool-button { width: 26px; height: 26px; background-color: white; border: none; border-radius: 50%; cursor: pointer; background-size: 60% 60%; background-position: center; background-repeat: no-repeat; transition: background-color 0.3s ease; }
-.tool-button:hover { background-color: #87cefa; }
-.tool-button.active { background-color: #87cefa; }
-.compass { width: 26px; height: 26px; background-color: white; border: none; border-radius: 50%; background-size: 60% 60%; background-position: center; background-repeat: no-repeat; }
-.logo-box { position: absolute; right: 26px; bottom: 10px; display: flex; gap: 20px; width: 360px; height: auto; opacity: 0.9; filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.8)); z-index: 10; .logo { display: flex; img { width: 100%; }}}
-.toolbar { position: absolute; top: 10px; left: 10px; background: rgba(255, 255, 255, 0.9); padding: 8px 12px; border-radius: 4px; font-family: sans-serif; z-index: 10; display: flex; gap: 10px; align-items: center; }
+.scale-bar { height: 6px; border: 2px solid #fff; border-top: none; transition: width 0.3s ease-in-out; width: 50px; }
 
+/* Layer Panel */
+.layer-panel { position: absolute; top: 60px; left: -300px; width: 270px; height: calc(100% - 60px); background: rgba(33, 36, 41, 0.95); color: white; font-family: 'Segoe UI', sans-serif; padding: 15px; transition: left 0.3s ease; z-index: 10001; overflow-y: auto; }
+.layer-panel.open { left: 0; }
+.layer-panel h2 { margin: 15px 0 10px; font-size: 15px; border-bottom: 1px solid #555; padding-bottom: 5px; }
+.layer-panel label { margin: 6px 0; font-size: 14px; }
+
+/* Accordion */
+.accordion-item { margin-bottom: 10px; }
+.accordion-header { cursor: pointer; font-weight: bold; display: flex; justify-content: space-between; padding: 5px 0; }
+.accordion-header span { transition: transform 0.2s ease; }
+.accordion-header span.rotate { transform: rotate(180deg); }
+.accordion-body { margin-left: 10px; margin-top: 5px; }
+
+/* Basemap Buttons */
+.basemap-selector { display: flex; gap: 10px; flex-wrap: wrap; }
+.basemap-btn { display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold; border-radius: 6px; background-color: #212429; color: #fff; transition: background 0.2s; user-select: none; }
+.basemap-btn input { display: none; }
+.basemap-btn:hover { background-color: #66CCFF; }
+.basemap-btn.selected { background-color: #66CCFF; color: #000; }
+.basemap-btn.normal-satellite { width: 130px; height: 60px; }
+.basemap-btn.vworld, .basemap-btn.esri { width: 130px; height: 30px; }
